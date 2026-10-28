@@ -1,0 +1,1081 @@
+ By Dr. Solomon 
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethiopian Health System 3D Explorer & Policy Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        ethiopia: {
+                            green: '#009A44',
+                            yellow: '#FED100',
+                            red: '#E4002B',
+                            blue: '#002B7F',
+                            darkBg: '#0b0f19',
+                            cardBg: 'rgba(17, 24, 39, 0.75)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans Ethiopic', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for Ethiopic support -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Ethiopic:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls for Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans Ethiopic', sans-serif;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #009A44;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FED100;
+        }
+        /* Glassmorphism effects */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .glass-panel-hover:hover {
+            border-color: rgba(0, 154, 68, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(0, 154, 68, 0.2);
+        }
+        .ethiopia-gradient-text {
+            background: linear-gradient(135deg, #009A44 0%, #FED100 50%, #E4002B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .ethiopia-border-gradient {
+            border-image: linear-gradient(to right, #009A44, #FED100, #E4002B) 1;
+        }
+        .glow-green {
+            box-shadow: 0 0 20px rgba(0, 154, 68, 0.4);
+        }
+        .glow-yellow {
+            box-shadow: 0 0 20px rgba(254, 209, 0, 0.4);
+        }
+        .glow-red {
+            box-shadow: 0 0 20px rgba(228, 0, 43, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-ethiopia-darkBg text-gray-100 min-h-screen flex flex-col antialiased">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-gray-800 px-4 lg:px-8 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <!-- Brand & Title -->
+            <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-green-600 via-yellow-500 to-red-600 p-0.5 flex items-center justify-center shadow-lg">
+                        <div class="w-full h-full bg-slate-900 rounded-full flex items-center justify-center">
+                            <i class="fa-solid font-bold text-yellow-400 text-lg">🇪🇹</i>
+                        </div>
+                    </div>
+                    <div>
+                        <h1 class="text-lg lg:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                            <span>Ethiopia Health Systems Hub</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/30">2024/2026</span>
+                        </h1>
+                        <p class="text-xs text-gray-400" id="headerSub">የኢትዮጵያ ጤና ጥበቃ ሥርዓት እና የፖሊሲ ማዕከል</p>
+                    </div>
+                </div>
+
+                <!-- Mobile Language Toggle Button -->
+                <button id="langToggleMobile" onclick="toggleLanguage()" class="md:hidden px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-yellow-400 border border-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-language"></i> <span id="langBtnTextMobile">አማርኛ</span>
+                </button>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex items-center space-x-1 sm:space-x-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 text-xs sm:text-sm">
+                <button onclick="switchTab('3d-system')" id="tab-3d-system" class="nav-tab px-3.5 py-2 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 bg-emerald-600 text-white shadow-lg">
+                    <i class="fa-solid fa-cube"></i> <span data-en="3D Health Tier System" data-am="3D የጤና ሥርዓት">3D Health Tier System</span>
+                </button>
+                <button onclick="switchTab('policy-2024')" id="tab-policy-2024" class="nav-tab px-3.5 py-2 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 text-gray-300 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-file-contract text-emerald-400"></i> <span data-en="Health Policy (Apr 2024)" data-am="ብሔራዊ ጤና ፖሊሲ (ሚያዝያ 2016)">Health Policy (Apr 2024)</span>
+                </button>
+                <button onclick="switchTab('hstp-ii')" id="tab-hstp-ii" class="nav-tab px-3.5 py-2 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 text-gray-300 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-chart-line text-yellow-400"></i> <span data-en="HSTP-II Strategy" data-am="ኤች.ኤስ.ቲ.ፒ-II ስትራቴጂ">HSTP-II Strategy</span>
+                </button>
+                <button onclick="switchTab('calculators')" id="tab-calculators" class="nav-tab px-3.5 py-2 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 text-gray-300 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-calculator text-red-400"></i> <span data-en="Clinical & Health Tools" data-am="የክሊኒካልና አስተዳደር ስሌቶች">Clinical & Health Tools</span>
+                </button>
+            </nav>
+
+            <!-- Language Switcher Desktop -->
+            <button id="langToggleDesktop" onclick="toggleLanguage()" class="hidden md:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-yellow-400 font-semibold border border-slate-700 transition-all text-xs">
+                <i class="fa-solid fa-globe"></i> <span id="langBtnTextDesktop">አማርኛ</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 lg:p-6 flex flex-col gap-6">
+
+        <!-- TAB 1: 3D Ethiopian Health Tier Visualizer -->
+        <section id="sec-3d-system" class="tab-content block space-y-6">
+            <!-- Top Alert Banner -->
+            <div class="glass-panel rounded-2xl p-4 border-l-4 border-emerald-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="p-3 bg-emerald-950 text-emerald-400 rounded-xl">
+                        <i class="fa-solid fa-sitemap text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-white text-base" data-en="3-Tier Ethiopian Healthcare System Visualizer" data-am="ባለ 3-ደረጃ የኢትዮጵያ የጤና አገልግሎት ሥርዓት">3-Tier Ethiopian Healthcare System Visualizer</h2>
+                        <p class="text-xs text-gray-400" data-en="Interactive 3D model representing PHCUs, Secondary Hospitals, and Tertiary Referral Centers." data-am="የመጀመሪያ ደረጃ የጤና እንክብካቤ፣ የሁለተኛ ደረጃ አጠቃላይ ሆስፒታሎች እና የሶስተኛ ደረጃ ሪፈራል ሆስፒታሎችን የያዘ መስተጋብራዊ 3D ሞዴል">Interactive 3D model representing PHCUs, Secondary Hospitals, and Tertiary Referral Centers.</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 text-xs bg-slate-900/80 px-3 py-2 rounded-xl border border-slate-700 text-gray-300">
+                    <i class="fa-solid fa-hand-pointer text-yellow-400 animate-bounce"></i>
+                    <span data-en="Click 3D nodes to inspect details" data-am="ዝርዝሩን ለማየት 3D ነጥቦችን ይጫኑ">Click 3D nodes to inspect details</span>
+                </div>
+            </div>
+
+            <!-- 3D Canvas + Info Panel Split Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- 3D Viewport Column -->
+                <div class="lg:col-span-8 relative glass-panel rounded-3xl overflow-hidden border border-slate-800 shadow-2xl h-[520px] flex flex-col">
+                    <!-- Canvas Toolbar -->
+                    <div class="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
+                        <button onclick="reset3DCamera()" class="px-3 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-xs text-emerald-400 border border-slate-700 flex items-center gap-1.5 backdrop-blur-md">
+                            <i class="fa-solid fa-rotate-left"></i> <span data-en="Reset View" data-am="ዕይታውን መልስ">Reset View</span>
+                        </button>
+                        <button onclick="toggleRotation()" id="btnAutoRotate" class="px-3 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-xs text-yellow-400 border border-slate-700 flex items-center gap-1.5 backdrop-blur-md">
+                            <i class="fa-solid fa-arrows-spin"></i> <span data-en="Toggle Orbit" data-am="ዝውውር አቁም/ቀጥል">Toggle Orbit</span>
+                        </button>
+                    </div>
+
+                    <!-- Tier Quick Selection Chips -->
+                    <div class="absolute bottom-4 left-4 right-4 z-10 flex flex-wrap justify-center gap-2">
+                        <button onclick="selectTierNode('primary')" class="px-3 py-1.5 rounded-xl bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 text-xs font-semibold backdrop-blur-md flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                            <span data-en="1. Primary (PHCU)" data-am="1. የመጀመሪያ ደረጃ">1. Primary (PHCU)</span>
+                        </button>
+                        <button onclick="selectTierNode('secondary')" class="px-3 py-1.5 rounded-xl bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-amber-500/40 text-xs font-semibold backdrop-blur-md flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
+                            <span data-en="2. Secondary (General)" data-am="2. ሁለተኛ ደረጃ">2. Secondary (General)</span>
+                        </button>
+                        <button onclick="selectTierNode('tertiary')" class="px-3 py-1.5 rounded-xl bg-rose-950/90 hover:bg-rose-900 text-rose-300 border border-rose-500/40 text-xs font-semibold backdrop-blur-md flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+                            <span data-en="3. Tertiary (Specialized)" data-am="3. ሶስተኛ ደረጃ">3. Tertiary (Specialized)</span>
+                        </button>
+                    </div>
+
+                    <!-- Three.js Canvas Container -->
+                    <div id="three-container" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+                </div>
+
+                <!-- Info Panel Column -->
+                <div class="lg:col-span-4 glass-panel rounded-3xl p-6 border border-slate-800 flex flex-col justify-between h-[520px] overflow-y-auto">
+                    <div id="tier-info-card" class="space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-700/60 pb-3">
+                            <span id="tier-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-950 text-emerald-400 border border-emerald-500/30">
+                                Level 1 Infrastructure
+                            </span>
+                            <i id="tier-icon" class="fa-solid fa-house-medical text-emerald-400 text-xl"></i>
+                        </div>
+                        <h3 id="tier-title" class="text-xl font-bold text-white">Primary Health Care Unit (PHCU)</h3>
+                        <p id="tier-am-title" class="text-sm font-semibold text-yellow-400">የመጀመሪያ ደረጃ ጤና እንክብካቤ ክፍለ-አካል</p>
+                        
+                        <p id="tier-description" class="text-xs text-gray-300 leading-relaxed">
+                            Serves 15,000 to 25,000 rural residents or 40,000 urban population. Comprises Health Posts (manned by Health Extension Workers) and Primary Hospitals/Health Centers offering basic preventative and curative services.
+                        </p>
+
+                        <div class="space-y-2 pt-2">
+                            <h4 class="text-xs font-bold uppercase text-gray-400 tracking-wider" data-en="Key Infrastructure Components:" data-am="ዋና ዋና የአገልግሎት ክፍሎች፡">Key Infrastructure Components:</h4>
+                            <ul id="tier-components" class="text-xs text-gray-300 space-y-1.5 list-disc list-inside">
+                                <li>Health Extension Posts (HEPs)</li>
+                                <li>Health Centers (HC)</li>
+                                <li>Primary Hospitals (35-50 beds)</li>
+                            </ul>
+                        </div>
+
+                        <div class="pt-2 border-t border-slate-800">
+                            <div class="text-xs font-semibold text-emerald-400 mb-1" data-en="Catchment Population:" data-am="የህዝብ ሽፋን መጠን፡">Catchment Population:</div>
+                            <div id="tier-population" class="text-sm font-bold text-white">15,000 - 100,000 people</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-gray-400">
+                        <span data-en="HSTP-II Priority Alignment" data-am="የኤች.ኤስ.ቲ.ፒ-II ቅድሚያ ትኩረት">HSTP-II Priority Alignment</span>
+                        <span class="text-emerald-400 font-semibold">100% Coverage Target</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Health System Overview Metrics Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="glass-panel p-4 rounded-2xl border-l-4 border-green-500">
+                    <div class="text-xs text-gray-400" data-en="Health Extension Workers (HEWs)" data-am="የጤና ኤክስቴንሽን ባለሙያዎች">Health Extension Workers (HEWs)</div>
+                    <div class="text-2xl font-bold text-white mt-1">40,000+</div>
+                    <div class="text-[11px] text-emerald-400 mt-1" data-en="Second-Gen HEP Upgrade Active" data-am="2ኛ ትውልድ ኤች.ኤ.ፒ ማሻሻያ">Second-Gen HEP Upgrade Active</div>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl border-l-4 border-yellow-500">
+                    <div class="text-xs text-gray-400" data-en="Primary Health Centers" data-am="የጤና ጣቢያዎች ብዛት">Primary Health Centers</div>
+                    <div class="text-2xl font-bold text-white mt-1">3,700+</div>
+                    <div class="text-[11px] text-yellow-400 mt-1" data-en="Serving 85%+ Rural Communities" data-am="85%+ የገጠር ህብረተሰብ ያገለግላል">Serving 85%+ Rural Communities</div>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl border-l-4 border-red-500">
+                    <div class="text-xs text-gray-400" data-en="General & Referral Hospitals" data-am="አጠቃላይ እና ሪፈራል ሆስፒታሎች">General & Referral Hospitals</div>
+                    <div class="text-2xl font-bold text-white mt-1">350+</div>
+                    <div class="text-[11px] text-red-400 mt-1" data-en="Secondary & Tertiary Tier" data-am="2ኛ እና 3ኛ ደረጃ ሽፋን">Secondary & Tertiary Tier</div>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl border-l-4 border-blue-500">
+                    <div class="text-xs text-gray-400" data-en="HSTP-II UHC Index Target" data-am="የUHC ሽፋን ኢላማ">HSTP-II UHC Index Target</div>
+                    <div class="text-2xl font-bold text-white mt-1">0.58</div>
+                    <div class="text-[11px] text-blue-400 mt-1" data-en="Up from baseline 0.48" data-am="ከመነሻ 0.48 ያደገ">Up from baseline 0.48</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: Revised Health Policy of Ethiopia (April 2024 / ሚያዝያ 2016 ዓ.ም) -->
+        <section id="sec-policy-2024" class="tab-content hidden space-y-6">
+            <!-- Header and Filter Bar -->
+            <div class="glass-panel rounded-2xl p-6 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-1 rounded-md bg-emerald-950 text-emerald-400 border border-emerald-500/30 text-xs font-bold">REVISED POLICY 2024</span>
+                            <span class="text-xs text-gray-400">ሚያዝያ 2016 ዓ.ም</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white mt-1" data-en="National Health Policy of Ethiopia (April 2024)" data-am="የኢትዮጵያ ብሔራዊ ጤና ፖሊሲ (ሚያዝያ 2016 ዓ.ም)">National Health Policy of Ethiopia (April 2024)</h2>
+                        <p class="text-xs text-gray-300 mt-1" data-en="Anchored on Articles 89 & 90 of FDRE Constitution ensuring equitable health access for all citizens." data-am="በኢ.ፌ.ዲ.ሪ ህገ-መንግስት አንቀጽ 89 እና 90 መሠረት ለሁሉም ዜጎች ፍትሃዊ የጤና ተደራሽነትን የሚያረጋግጥ።">Anchored on Articles 89 & 90 of FDRE Constitution ensuring equitable health access for all citizens.</p>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="relative w-full md:w-72">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400 text-xs"></i>
+                        <input type="text" id="policySearchInput" oninput="filterPolicyArticles()" placeholder="Search policy guidelines..." class="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                    </div>
+                </div>
+
+                <!-- Strategic Vision Banner -->
+                <div class="p-4 rounded-xl bg-gradient-to-r from-emerald-950/80 via-slate-900 to-amber-950/80 border border-emerald-500/30 flex items-center justify-between">
+                    <div>
+                        <div class="text-xs text-yellow-400 font-semibold uppercase tracking-wider" data-en="National Health Vision" data-am="ብሔራዊ የጤና ራዕይ">National Health Vision</div>
+                        <div class="text-lg font-bold text-white mt-0.5">"ጤናማ፣ ምርታማና የበለጸገ ኀብረተሰብ"</div>
+                        <div class="text-xs text-emerald-300 italic">"Healthy, Productive, and Prosperous Society"</div>
+                    </div>
+                    <i class="fa-solid fa-award text-3xl text-yellow-400 opacity-80 hidden sm:block"></i>
+                </div>
+            </div>
+
+            <!-- Policy Accordion / Grid Sections -->
+            <div id="policyContainer" class="space-y-4">
+                <!-- Section 1: Constitutional Foundations & Guiding Principles -->
+                <div class="policy-card glass-panel rounded-2xl p-6 border border-slate-800">
+                    <h3 class="text-lg font-bold text-yellow-400 flex items-center gap-2 mb-3">
+                        <i class="fa-solid fa-scale-balanced text-emerald-400"></i>
+                        <span data-en="1. Constitutional Foundation & 7 Guiding Principles" data-am="1. ህገ-መንግስታዊ መሠረት እና 7ቱ መሪ መبادዎች">1. Constitutional Foundation & 7 Guiding Principles</span>
+                    </h3>
+                    <p class="text-xs text-gray-300 mb-4" data-en="Grounded in FDRE Constitution Articles 89 (Social Objectives) & 90 (Public Health Services)." data-am="በኢ.ፌ.ዲ.ሪ ህገ-መንግስት አንቀጽ 89 (ማህበራዊ ዓላማዎች) እና 90 (የሕዝብ ጤና አገልግሎቶች) ላይ የተመሰረተ።">Grounded in FDRE Constitution Articles 89 (Social Objectives) & 90 (Public Health Services).</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                            <span class="font-bold text-emerald-400 block mb-1">1. Equity & Inclusiveness (ፍትሃዊነትና አሳታፊነት)</span>
+                            <span class="text-gray-400">Ensuring zero barrier to health based on region, gender, socio-economic status.</span>
+                        </div>
+                        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                            <span class="font-bold text-emerald-400 block mb-1">2. Quality & Excellence (ጥራትና ድንቅነት)</span>
+                            <span class="text-gray-400">Patient-centered standard care across all healthcare delivery levels.</span>
+                        </div>
+                        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                            <span class="font-bold text-emerald-400 block mb-1">3. Sustainability (ዘላቂነት)</span>
+                            <span class="text-gray-400">Domestic resource mobilization and resilient system building.</span>
+                        </div>
+                        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                            <span class="font-bold text-emerald-400 block mb-1">4. Evidence-Based Decision (በመረጃ የተደገፈ ውሳኔ)</span>
+                            <span class="text-gray-400">Data-driven policy formulation and operational research.</span>
+                        </div>
+                        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                            <span class="font-bold text-emerald-400 block mb-1">5. Transparency & Accountability (ግልጽነትና ተጠያቂነት)</span>
+                            <span class="text-gray-400">Ethical governance at all health administration tiers.</span>
+                        </div>
+                        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                            <span class="font-bold text-emerald-400 block mb-1">6. Multisectoral Collaboration (የብዙ ዘርፍ ትብብር)</span>
+                            <span class="text-gray-400">One Health approach and health-in-all-policies strategy.</span>
+                        </div>
+                        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 col-span-1 md:col-span-2">
+                            <span class="font-bold text-emerald-400 block mb-1">7. Ethical & Culturally Sensitive Service (ሥነ-ምግባራዊና ባህላዊ አከባበር)</span>
+                            <span class="text-gray-400">Respecting indigenous cultural values while upholding international bioethics standard.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: 10 Key Policy Directions -->
+                <div class="policy-card glass-panel rounded-2xl p-6 border border-slate-800">
+                    <h3 class="text-lg font-bold text-yellow-400 flex items-center gap-2 mb-3">
+                        <i class="fa-solid fa-compass text-yellow-400"></i>
+                        <span data-en="2. Ten (10) Key Policy Directions (April 2024)" data-am="2. አስሩ (10) ዋና ዋና የፖሊሲ አቅጣጫዎች (ሚያዝያ 2016)">2. Ten (10) Key Policy Directions (April 2024)</span>
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-emerald-400 font-bold">1. Quality & Equitable Health Services (የጥራትና ፍትሃዊ የጤና አገልግሎት)</span>
+                            <p class="text-gray-300">Scaling primary health care (PHC) essential package, high-impact maternal, child, and infectious disease interventions.</p>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-emerald-400 font-bold">2. Community Ownership & Empowerment (የህብረተሰብ ባለቤትነት)</span>
+                            <p class="text-gray-300">Revitalizing Health Extension Program (HEP) towards 2nd Generation standards and urban health models.</p>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-emerald-400 font-bold">3. Emergency Preparedness & Resilience (የድንገተኛ አደጋ ዝግጁነትና ጥንካሬ)</span>
+                            <p class="text-gray-300">Strengthening Ethiopian Public Health Institute (EPHI), real-time disease surveillance and climate resilience.</p>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-emerald-400 font-bold">4. Hygiene, Sanitation & Environmental Health (ጽዳት፣ አከባቢ ጤና)</span>
+                            <p class="text-gray-300">Promoting WASH in health facilities, climate-smart health centers, and occupational safety.</p>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-emerald-400 font-bold">5. Food Safety & Nutrition Security (የምግብ ደህንነትና ሥነ-ምግብ)</span>
+                            <p class="text-gray-300">Eradicating stunting/wasting through multisectoral Seqota Declaration initiatives.</p>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-emerald-400 font-bold">6. Human Resources for Health (HRH) (የጤና ሰው ሀብት)</span>
+                            <p class="text-gray-300">Building Motivated, Competent, and Compassionate (MCC) professionals and fair retention schemes.</p>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-emerald-400 font-bold">7. Digital Health, Research & Innovation (ዲጂታል ጤናና ምርምር)</span>
+                            <p class="text-gray-300">Implementing e-Health, electronic Community Health Information System (eCHIS), and localized clinical trial capabilities.</p>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-emerald-400 font-bold">8. Regulatory Capacity & Safety (የጤና ቁጥጥርና ደህንነት)</span>
+                            <p class="text-gray-300">EFDA regulation of pharmaceuticals, medical equipment, and healthcare facility licensing.</p>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-emerald-400 font-bold">9. Health Financing & Insurance (የጤና ፋይናንስና ኢንሹራንስ)</span>
+                            <p class="text-gray-300">Expanding Community Based Health Insurance (CBHI) & Social Health Insurance (SHI) for financial protection.</p>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-emerald-400 font-bold">10. Indigenous Knowledge & Traditional Medicine (ባህላዊ ህክምና)</span>
+                            <p class="text-gray-300">Integrating evidence-based traditional health practices into formal regulatory and research frameworks.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: HSTP-II Strategic Plan (2020/21–2024/25) -->
+        <section id="sec-hstp-ii" class="tab-content hidden space-y-6">
+            <div class="glass-panel rounded-2xl p-6 border-l-4 border-yellow-500">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <span class="px-2.5 py-1 rounded-md bg-amber-950 text-amber-400 border border-amber-500/30 text-xs font-bold">5-YEAR STRATEGIC PLAN</span>
+                        <h2 class="text-2xl font-bold text-white mt-1" data-en="Health Sector Transformation Plan II (HSTP-II)" data-am="ሁለተኛው የጤና ዘርፍ ትራንስፎርሜሽን እቅድ (2013-2017 ዓ.ም)">Health Sector Transformation Plan II (HSTP-II)</h2>
+                        <p class="text-xs text-gray-300 mt-1" data-en="Execution framework spanning EFY 2013-2017 prioritizing UHC and Woreda Transformation." data-am="ከ2013-2017 በጀት ዓመት የሚተገበር፣ ሁለንተናዊ የጤና ሽፋንና የወረዳ ትራንስፎርሜሽንን የሚያስቀድም።">Execution framework spanning EFY 2013-2017 prioritizing UHC and Woreda Transformation.</p>
+                    </div>
+                    <div class="text-right bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                        <div class="text-xs text-gray-400" data-en="Total Costing Base Case" data-am="መሰረታዊ የበጀት መጠን">Total Costing Base Case</div>
+                        <div class="text-xl font-bold text-yellow-400">$21.88 Billion USD</div>
+                        <div class="text-[11px] text-emerald-400" data-en="High Case: $27.55 Billion USD" data-am="ከፍተኛ በጀት፡ $27.55 ቢሊዮን">High Case: $27.55 Billion USD</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5 Transformation Agendas Cards -->
+            <h3 class="text-lg font-bold text-white flex items-center gap-2" data-en="5 Core Transformation Agendas" data-am="5ቱ የትራንስፎርሜሽን አጀንዳዎች">
+                <i class="fa-solid fa-bolt text-yellow-400"></i> 5 Core Transformation Agendas
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div class="glass-panel p-4 rounded-2xl border border-slate-800 hover:border-emerald-500/50 transition-all">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-950 text-emerald-400 flex items-center justify-center font-bold mb-2 text-sm">01</div>
+                    <h4 class="font-bold text-sm text-white mb-1" data-en="Quality & Equity" data-am="ጥራት እና ፍትሃዊነት">Quality & Equity</h4>
+                    <p class="text-xs text-gray-400" data-en="Ensuring standardized, respectful, and equal care for all population segments." data-am="ለሁሉም ህብረተሰብ ክፍል ደረጃውን የጠበቀ እና እኩል የጤና አገልግሎት ማረጋገጥ।">Ensuring standardized, respectful, and equal care for all population segments.</p>
+                </div>
+
+                <div class="glass-panel p-4 rounded-2xl border border-slate-800 hover:border-emerald-500/50 transition-all">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-950 text-emerald-400 flex items-center justify-center font-bold mb-2 text-sm">02</div>
+                    <h4 class="font-bold text-sm text-white mb-1" data-en="Information Revolution" data-am="የመረጃ አብዮት">Information Revolution</h4>
+                    <p class="text-xs text-gray-400" data-en="Digitization of health metrics, eCHIS deployment, and data use culture." data-am="የጤና መረጃዎችን በዲጂታል ማደራጀት እና መረጃን ለውሳኔ የመጠቀም ባህል ማዳበር।">Digitization of health metrics, eCHIS deployment, and data use culture.</p>
+                </div>
+
+                <div class="glass-panel p-4 rounded-2xl border border-slate-800 hover:border-emerald-500/50 transition-all">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-950 text-emerald-400 flex items-center justify-center font-bold mb-2 text-sm">03</div>
+                    <h4 class="font-bold text-sm text-white mb-1" data-en="MCC Workforce" data-am="የተነሳሳና ሩህሩህ ሰራተኛ">MCC Workforce</h4>
+                    <p class="text-xs text-gray-400" data-en="Motivated, Competent, and Compassionate healthcare professionals." data-am="የተነሳሳ፣ ብቁ እና አክብሮት ያለው የጤና ባለሙያ መገንባት।">Motivated, Competent, and Compassionate healthcare professionals.</p>
+                </div>
+
+                <div class="glass-panel p-4 rounded-2xl border border-slate-800 hover:border-emerald-500/50 transition-all">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-950 text-emerald-400 flex items-center justify-center font-bold mb-2 text-sm">04</div>
+                    <h4 class="font-bold text-sm text-white mb-1" data-en="Health Financing" data-am="የጤና ፋይናንስ">Health Financing</h4>
+                    <p class="text-xs text-gray-400" data-en="Scaling CBHI coverage above 80% and reducing out-of-pocket expenditure." data-am="የህብረተሰብ አቀፍ ጤና መድን (CBHI) ሽፋን ከ80% በላይ ማሳደግ।">Scaling CBHI coverage above 80% and reducing out-of-pocket expenditure.</p>
+                </div>
+
+                <div class="glass-panel p-4 rounded-2xl border border-slate-800 hover:border-emerald-500/50 transition-all">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-950 text-emerald-400 flex items-center justify-center font-bold mb-2 text-sm">05</div>
+                    <h4 class="font-bold text-sm text-white mb-1" data-en="Leadership" data-am="አመራርነት">Leadership</h4>
+                    <p class="text-xs text-gray-400" data-en="Transforming institutional leadership, governance, and decentralization." data-am="የተቋማት አመራር፣ የበላይነትና የውሳኔ አሰጣጥ አቅምን ማጠናከር।">Transforming institutional leadership, governance, and decentralization.</p>
+                </div>
+            </div>
+
+            <!-- HSTP-II Strategic Objectives & Key Impact Targets Table -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Objectives -->
+                <div class="glass-panel rounded-2xl p-6 border border-slate-800">
+                    <h3 class="text-base font-bold text-yellow-400 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-bullseye text-red-400"></i>
+                        <span data-en="4 Core HSTP-II Strategic Objectives" data-am="4ቱ የኤች.ኤስ.ቲ.ፒ-II ዋና ስትራቴጂካዊ ዓላማዎች">4 Core HSTP-II Strategic Objectives</span>
+                    </h3>
+                    <div class="space-y-3 text-xs">
+                        <div class="p-3 bg-slate-900/80 rounded-xl border-l-4 border-emerald-500">
+                            <span class="font-bold text-white block">1. Accelerate Progress Towards Universal Health Coverage (UHC)</span>
+                            <span class="text-gray-400">Expanding reproductive, maternal, newborn, child, adolescent health, and nutrition services.</span>
+                        </div>
+                        <div class="p-3 bg-slate-900/80 rounded-xl border-l-4 border-yellow-500">
+                            <span class="font-bold text-white block">2. Protect People from Health Emergencies</span>
+                            <span class="text-gray-400">Early warning system, epidemic outbreak control, and public health disaster management.</span>
+                        </div>
+                        <div class="p-3 bg-slate-900/80 rounded-xl border-l-4 border-red-500">
+                            <span class="font-bold text-white block">3. Woreda Transformation</span>
+                            <span class="text-gray-400">Converting districts into high-performing, self-sustaining health administrative units.</span>
+                        </div>
+                        <div class="p-3 bg-slate-900/80 rounded-xl border-l-4 border-blue-500">
+                            <span class="font-bold text-white block">4. Enhance Health System Responsiveness</span>
+                            <span class="text-gray-400">Improving patient satisfaction, hospital amenities, and ethical grievance handling.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Targets Table -->
+                <div class="glass-panel rounded-2xl p-6 border border-slate-800">
+                    <h3 class="text-base font-bold text-emerald-400 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-flag-checkered"></i>
+                        <span data-en="HSTP-II Key Impact Indicators & Targets" data-am="የኤች.ኤስ.ቲ.ፒ-II ዋና ዋና ኢላማዎች">HSTP-II Key Impact Indicators & Targets</span>
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-900 text-gray-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                                <tr>
+                                    <th class="py-2.5 px-3">Indicator</th>
+                                    <th class="py-2.5 px-3">Baseline</th>
+                                    <th class="py-2.5 px-3 text-emerald-400">Target 2024/25</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 text-gray-300">
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-white">Maternal Mortality Ratio (MMR)</td>
+                                    <td class="py-2.5 px-3">401 / 100k</td>
+                                    <td class="py-2.5 px-3 font-bold text-emerald-400">279 / 100k</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-white">Under-5 Mortality Rate</td>
+                                    <td class="py-2.5 px-3">59 / 1,000</td>
+                                    <td class="py-2.5 px-3 font-bold text-emerald-400">44 / 1,000</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-white">Infant Mortality Rate (IMR)</td>
+                                    <td class="py-2.5 px-3">43 / 1,000</td>
+                                    <td class="py-2.5 px-3 font-bold text-emerald-400">30 / 1,000</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-white">Pentavalent-3 Coverage</td>
+                                    <td class="py-2.5 px-3">73%</td>
+                                    <td class="py-2.5 px-3 font-bold text-emerald-400">85%</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-white">Contraceptive Prevalence Rate (CPR)</td>
+                                    <td class="py-2.5 px-3">41%</td>
+                                    <td class="py-2.5 px-3 font-bold text-emerald-400">50%</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-white">Stunting in Under-5 Children</td>
+                                    <td class="py-2.5 px-3">37%</td>
+                                    <td class="py-2.5 px-3 font-bold text-emerald-400">25%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: Interactive Clinical & Health Management Calculators -->
+        <section id="sec-calculators" class="tab-content hidden space-y-6">
+            <div class="glass-panel rounded-2xl p-6 border-l-4 border-red-500">
+                <h2 class="text-2xl font-bold text-white" data-en="Interactive Health & Clinical Calculators" data-am="የክሊኒካልና የጤና አስተዳደር ስሌቶች">Interactive Health & Clinical Calculators</h2>
+                <p class="text-xs text-gray-300 mt-1" data-en="Essential facility decision support tools for infection control, national target tracking, and staffing scheduling." data-am="ለሆስፒታል ጽዳት፣ ለ HSTP-II ኢላማዎች መከታተያ እና የሆስፒታል ሰራተኞች የስራ ሰዓት ስሌት የሚረዱ መሳሪያዎች።">Essential facility decision support tools for infection control, national target tracking, and staffing scheduling.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- CALCULATOR 1: Chlorine/Bleach Disinfection Dilution Calculator -->
+                <div class="glass-panel rounded-2xl p-6 border border-slate-800 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center space-x-2 text-emerald-400 font-bold text-sm mb-2">
+                            <i class="fa-solid fa-bottle-droplet text-lg"></i>
+                            <span data-en="1. Hospital Disinfectant Dilution" data-am="1. የክሎሪን/በረኪና ማቃለያ ስሌት">1. Hospital Disinfectant Dilution</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-4" data-en="Calculates bleach volume needed to prepare 0.5% (spills/Ebola/cholera) or 0.05% (hand hygiene) solution." data-am="ለሆስፒታል ንፅህና (0.5% ወይም 0.05%) የሚሆን የብሊች/በረኪና መጠን ስሌት።">Calculates bleach volume needed to prepare 0.5% (spills/Ebola/cholera) or 0.05% (hand hygiene) solution.</p>
+
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="block text-gray-300 mb-1" data-en="Stock Hypochlorite Concentration (%)" data-am="ያለው በረኪና ድምር ውህደት (%)">Stock Hypochlorite Concentration (%)</label>
+                                <input type="number" id="stockConc" value="5" step="0.1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+                                <span class="text-[10px] text-gray-500">Standard local stock (e.g., Berekina = 5%)</span>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 mb-1" data-en="Desired Target Concentration (%)" data-am="የሚፈለገው ውህደት (%)">Desired Target Concentration (%)</label>
+                                <select id="targetConc" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+                                    <option value="0.5">0.5% - High Level Disinfection (Blood Spills/Medical Waste)</option>
+                                    <option value="0.05">0.05% - Low Level Disinfection (Hand Washing/Surfaces)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 mb-1" data-en="Total Solution Volume Needed (Liters)" data-am="የሚፈለገው አጠቃላይ መጠን (በሊትር)">Total Solution Volume Needed (Liters)</label>
+                                <input type="number" id="totalVolume" value="10" step="1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="calculateChlorine()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-lg flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-calculator"></i> <span data-en="Calculate Dilution" data-am="ስሌቱን አስላ">Calculate Dilution</span>
+                    </button>
+
+                    <div id="chlorineResult" class="p-3 bg-slate-900/90 rounded-xl border border-emerald-500/30 text-xs hidden">
+                        <!-- Result Populated JS -->
+                    </div>
+                </div>
+
+                <!-- CALCULATOR 2: UHC Indicator Progress Tracker -->
+                <div class="glass-panel rounded-2xl p-6 border border-slate-800 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center space-x-2 text-yellow-400 font-bold text-sm mb-2">
+                            <i class="fa-solid fa-chart-line text-lg"></i>
+                            <span data-en="2. HSTP-II UHC Progress Tracker" data-am="2. የUHC ሽፋን ስሌት መከታተያ">2. HSTP-II UHC Progress Tracker</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-4" data-en="Check regional/zonal achievement percentage against national 2024/25 targets." data-am="የዞን ወይም ክልል አፈፃፀምን ከHSTP-II ኢላማዎች ጋር ያወዳድሩ።">Check regional/zonal achievement percentage against national 2024/25 targets.</p>
+
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="block text-gray-300 mb-1" data-en="Select HSTP-II Target Indicator" data-am="የኢላማ መለኪያ ይምረጡ">Select HSTP-II Target Indicator</label>
+                                <select id="uhcIndicator" onchange="updateUhcBaseline()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-yellow-500">
+                                    <option value="mmr">Maternal Mortality Ratio (MMR) - Target: 279</option>
+                                    <option value="u5mr">Under-5 Mortality Rate - Target: 44</option>
+                                    <option value="penta3">Pentavalent-3 Vaccine Coverage (%) - Target: 85%</option>
+                                    <option value="cpr">Contraceptive Prevalence Rate (%) - Target: 50%</option>
+                                    <option value="uhc_index">Overall UHC Index - Target: 0.58</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 mb-1" data-en="Current Recorded Facility / Zonal Value" data-am="የአሁኑ የወቅቱ ውጤት/መረጃ">Current Recorded Facility / Zonal Value</label>
+                                <input type="number" id="currentUhcVal" value="310" step="0.1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-yellow-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="calculateUhcProgress()" class="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition-all shadow-lg flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-chart-pie"></i> <span data-en="Evaluate Achievement" data-am="አፈፃፀሙን አስላ">Evaluate Achievement</span>
+                    </button>
+
+                    <div id="uhcResult" class="p-3 bg-slate-900/90 rounded-xl border border-amber-500/30 text-xs hidden">
+                        <!-- Result Populated JS -->
+                    </div>
+                </div>
+
+                <!-- CALCULATOR 3: Hospital Staffing & Shift Hours -->
+                <div class="glass-panel rounded-2xl p-6 border border-slate-800 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center space-x-2 text-red-400 font-bold text-sm mb-2">
+                            <i class="fa-solid fa-user-nurse text-lg"></i>
+                            <span data-en="3. Hospital Duty Staffing Estimator" data-am="3. የሆስፒታል ስታፍ እና የስራ ሰዓት ስሌት">3. Hospital Duty Staffing Estimator</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-4" data-en="Calculates minimum full-time equivalent (FTE) nurses/doctors needed for 24/7 continuous coverage." data-am="ለ24/7 ህክምና አገልግሎት የሚያስፈልጉ የነርሶች/ሐኪሞች ብዛት ስሌት።">Calculates minimum full-time equivalent (FTE) nurses/doctors needed for 24/7 continuous coverage.</p>
+
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="block text-gray-300 mb-1" data-en="Number of Inpatient Beds / Units" data-am="የአልጋዎች ብዛት">Number of Inpatient Beds / Units</label>
+                                <input type="number" id="bedCount" value="40" step="1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-red-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 mb-1" data-en="Desired Staff-to-Bed Ratio (1 Staff per N Beds)" data-am="የሰራተኛና የአልጋ ተጣጣፊነት (1 ሰራተኛ ለ N አልጋ)">Desired Staff-to-Bed Ratio (1 Staff per N Beds)</label>
+                                <input type="number" id="staffRatio" value="5" step="1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-red-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 mb-1" data-en="Standard Weekly Work Hours per Staff" data-am="የአንድ ሰራተኛ ሳምንታዊ የስራ ሰዓት">Standard Weekly Work Hours per Staff</label>
+                                <input type="number" id="workHours" value="39" step="1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-red-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="calculateStaffing()" class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-all shadow-lg flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-users"></i> <span data-en="Estimate Staffing FTE" data-am="የሰራተኛ ፍላጎት አስላ">Estimate Staffing FTE</span>
+                    </button>
+
+                    <div id="staffResult" class="p-3 bg-slate-900/90 rounded-xl border border-rose-500/30 text-xs hidden">
+                        <!-- Result Populated JS -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-panel border-t border-gray-800 mt-8 py-4 px-4 text-center text-xs text-gray-400">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div>
+                <span> Ministry of Health - Ethiopia (MoH) | </span>
+                <span data-en="Revised Health Policy April 2024 & HSTP-II Platform" data-am="የተሻሻለው ጤና ፖሊሲ ሚያዝያ 2016 እና ኤች.ኤስ.ቲ.ፒ-II">Revised Health Policy April 2024 & HSTP-II Platform</span>
+            </div>
+            <div class="flex items-center space-x-3 text-yellow-400">
+                <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+                <span class="text-[11px] text-gray-300">Ethiopian Public Health System Framework</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Language State (default: English)
+        let currentLang = 'en';
+
+        // 3D Scene Global Variables
+        let scene, camera, renderer, controls;
+        let primaryNode, secondaryNode, tertiaryNode;
+        let animatedParticles;
+        let autoRotate = true;
+
+        // Health Tiers Detailed Data
+        const tierData = {
+            primary: {
+                titleEn: "Primary Health Care Unit (PHCU)",
+                titleAm: "የመጀመሪያ ደረጃ ጤና እንክብካቤ ክፍለ-አካል",
+                badge: "Level 1 Infrastructure",
+                badgeBg: "bg-emerald-950 text-emerald-400 border-emerald-500/30",
+                icon: "fa-house-medical text-emerald-400",
+                descEn: "Serves 15,000 to 25,000 rural residents or 40,000 urban population. Comprises Health Extension Posts (HEPs), Health Centers (HCs), and Primary Hospitals offering essential preventative and curative services.",
+                descAm: "ከ15,000 እስከ 25,000 የገጠር ህዝብ ወይም 40,000 የከተማ ህዝብ ያገለግላል። የጤና ኤክስቴንሽን ኬላዎችን፣ የጤና ጣቢያዎችን እና የመጀመሪያ ደረጃ ሆስፒታሎችን ያጠቃልላል።",
+                componentsEn: ["Health Extension Posts (HEPs)", "Health Centers (HCs)", "Primary Hospitals (35-50 beds)"],
+                componentsAm: ["የጤና ኤክስቴንሽን ኬላዎች", "የጤና ጣቢያዎች", "የመጀመሪያ ደረጃ ሆስፒታሎች (35-50 አልጋዎች)"],
+                pop: "15,000 - 100,000 people",
+                color: 0x009A44
+            },
+            secondary: {
+                titleEn: "Secondary Level: General Hospitals",
+                titleAm: "ሁለተኛ ደረጃ፡ አጠቃላይ ሆስፒታሎች",
+                badge: "Level 2 Regional Care",
+                badgeBg: "bg-amber-950 text-amber-300 border-amber-500/30",
+                icon: "fa-hospital text-amber-400",
+                descEn: "Provides inpatient and outpatient secondary care, surgical services, emergency obstetric care, and clinical training for primary health staff.",
+                descAm: "የሁለተኛ ደረጃ የህክምና አገልግሎት፣ የቀዶ ጥገና፣ የድንገተኛ ወሊድ እና የውስጥ ደዌ ህክምናዎችን ይሰጣል።",
+                componentsEn: ["General Hospitals (100-150 beds)", "Emergency Care Units", "Specialized Outpatient Clinics"],
+                componentsAm: ["አጠቃላይ ሆስፒታሎች (100-150 አልጋዎች)", "የድንገተኛ ህክምና ክፍሎች", "የተለዩ የክሊኒክ አገልግሎቶች"],
+                pop: "1,000,000 - 1,500,000 people",
+                color: 0xFED100
+            },
+            tertiary: {
+                titleEn: "Tertiary Level: Specialized Referral Hospitals",
+                titleAm: "ሶስተኛ ደረጃ፡ ስፔሻላይዝድ ሪፈራል ሆስፒታሎች",
+                badge: "Level 3 Specialized Referral",
+                badgeBg: "bg-rose-950 text-rose-300 border-rose-500/30",
+                icon: "fa-hospital-user text-rose-400",
+                descEn: "Provides advanced specialized care, medical research, teaching/university centers (e.g., Tikur Anbessa Hospital), and national public health surveillance.",
+                descAm: "ከፍተኛ ስፔሻላይዝድ የህክምና አገልግሎት፣ የህክምና ምርምር እና የዩኒቨርሲቲ ማስተማሪያ ሆስፒታሎችን (ምሳሌ፡ ጥቁር አንበሳ) ያጠቃልላል።",
+                componentsEn: ["Specialized & Comprehensive Hospitals (200-500+ beds)", "National Medical Research Labs", "Tertiary Emergency Response"],
+                componentsAm: ["ከፍተኛ ስፔሻላይዝድ ሆስፒታሎች (200-500+ አልጋዎች)", "ብሔራዊ የሕክምና ምርምር ማዕከላት", "የሶስተኛ ደረጃ ድንገተኛ ምላሽ"],
+                pop: "3,500,000 - 5,000,000 people",
+                color: 0xE4002B
+            }
+        };
+
+        // Window Load Initialization
+        window.onload = function () {
+            init3DScene();
+            animateLoop();
+            calculateChlorine();
+            calculateStaffing();
+        };
+
+        // Initialize Three.js Canvas with Ethiopian Health System Nodes
+        function init3DScene() {
+            const container = document.getElementById('three-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x0b0f19, 0.025);
+
+            // Camera setup
+            camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+            camera.position.set(0, 8, 22);
+
+            // Renderer setup
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            // Orbit Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2.1;
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            dirLight.position.set(10, 20, 15);
+            scene.add(dirLight);
+
+            const pointLight = new THREE.PointLight(0x009A44, 2, 30);
+            pointLight.position.set(0, 5, 0);
+            scene.add(pointLight);
+
+            // Ground Base Grid Plane
+            const gridHelper = new THREE.GridHelper(30, 30, 0x009A44, 0x1e293b);
+            gridHelper.position.y = -2;
+            scene.add(gridHelper);
+
+            // Create Visual 3-Tier Structures
+            // Tier 1: Primary Health Care Unit (Green Base Cylinder)
+            const primaryGeo = new THREE.CylinderGeometry(4, 4.5, 1, 32);
+            const primaryMat = new THREE.MeshStandardMaterial({ color: 0x009A44, roughness: 0.3, metalness: 0.2 });
+            primaryNode = new THREE.Mesh(primaryGeo, primaryMat);
+            primaryNode.position.set(-7, -1, 0);
+            primaryNode.userData = { id: 'primary' };
+            scene.add(primaryNode);
+
+            // Small Satellite Posts around Primary
+            for(let i=0; i<5; i++) {
+                const angle = (i / 5) * Math.PI * 2;
+                const satGeo = new THREE.BoxGeometry(0.6, 0.8, 0.6);
+                const satMat = new THREE.MeshStandardMaterial({ color: 0x10b981 });
+                const sat = new THREE.Mesh(satGeo, satMat);
+                sat.position.set(-7 + Math.cos(angle)*2.2, -0.6, Math.sin(angle)*2.2);
+                scene.add(sat);
+            }
+
+            // Tier 2: Secondary Hospital (Yellow Middle Octagon/Box Stack)
+            const secGeo = new THREE.BoxGeometry(3, 2.5, 3);
+            const secMat = new THREE.MeshStandardMaterial({ color: 0xFED100, roughness: 0.2, metalness: 0.4 });
+            secondaryNode = new THREE.Mesh(secGeo, secMat);
+            secondaryNode.position.set(0, 0, 0);
+            secondaryNode.userData = { id: 'secondary' };
+            scene.add(secondaryNode);
+
+            // Tier 3: Tertiary Referral Center (Red Tower with Glass Sphere)
+            const tertGeo = new THREE.CylinderGeometry(1.5, 2, 4.5, 16);
+            const tertMat = new THREE.MeshStandardMaterial({ color: 0xE4002B, roughness: 0.1, metalness: 0.6 });
+            tertiaryNode = new THREE.Mesh(tertGeo, tertMat);
+            tertiaryNode.position.set(7, 1, 0);
+            tertiaryNode.userData = { id: 'tertiary' };
+            scene.add(tertiaryNode);
+
+            // Glowing Crown Sphere for Tertiary
+            const crownGeo = new THREE.IcosahedronGeometry(0.9, 2);
+            const crownMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xE4002B, wireframe: true });
+            const crown = new THREE.Mesh(crownGeo, crownMat);
+            crown.position.set(7, 3.8, 0);
+            scene.add(crown);
+
+            // Particle Swarm floating background
+            const particleGeo = new THREE.BufferGeometry();
+            const count = 300;
+            const positions = new Float32Array(count * 3);
+            for(let i=0; i<count*3; i++) {
+                positions[i] = (Math.random() - 0.5) * 40;
+            }
+            particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const particleMat = new THREE.PointsMaterial({ size: 0.15, color: 0xFED100, transparent: true, opacity: 0.6 });
+            animatedParticles = new THREE.Points(particleGeo, particleMat);
+            scene.add(animatedParticles);
+
+            // Raycaster for 3D Clicks
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            container.addEventListener('click', (e) => {
+                const rect = renderer.domElement.getBoundingClientRect();
+                mouse.x = ((e.clientX - rect.left) / container.clientWidth) * 2 - 1;
+                mouse.y = -((e.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects([primaryNode, secondaryNode, tertiaryNode]);
+
+                if(intersects.length > 0) {
+                    const clickedId = intersects[0].object.userData.id;
+                    selectTierNode(clickedId);
+                }
+            });
+
+            // Handle Resize
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('three-container');
+            if(!container) return;
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // Three.js Animation Loop
+        function animateLoop() {
+            requestAnimationFrame(animateLoop);
+
+            if (autoRotate) {
+                primaryNode.rotation.y += 0.005;
+                secondaryNode.rotation.y += 0.008;
+                tertiaryNode.rotation.y += 0.006;
+                animatedParticles.rotation.y += 0.001;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function toggleRotation() {
+            autoRotate = !autoRotate;
+            const btn = document.getElementById('btnAutoRotate');
+            btn.classList.toggle('text-yellow-400');
+            btn.classList.toggle('text-gray-400');
+        }
+
+        function reset3DCamera() {
+            camera.position.set(0, 8, 22);
+            controls.target.set(0, 0, 0);
+        }
+
+        // Select and Highlight Health Tier Node
+        function selectTierNode(tierId) {
+            const data = tierData[tierId];
+            if(!data) return;
+
+            // Update UI card details
+            document.getElementById('tier-badge').className = `px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${data.badgeBg}`;
+            document.getElementById('tier-badge').innerText = data.badge;
+
+            document.getElementById('tier-icon').className = `fa-solid ${data.icon} text-xl`;
+            document.getElementById('tier-title').innerText = data.titleEn;
+            document.getElementById('tier-am-title').innerText = data.titleAm;
+
+            document.getElementById('tier-description').innerText = currentLang === 'en' ? data.descEn : data.descAm;
+
+            // Components List
+            const compList = document.getElementById('tier-components');
+            const items = currentLang === 'en' ? data.componentsEn : data.componentsAm;
+            compList.innerHTML = items.map(item => `<li>${item}</li>`).join('');
+
+            document.getElementById('tier-population').innerText = data.pop;
+
+            // Move camera focus slightly towards selected node
+            if(tierId === 'primary') controls.target.set(-7, 0, 0);
+            if(tierId === 'secondary') controls.target.set(0, 0, 0);
+            if(tierId === 'tertiary') controls.target.set(7, 0, 0);
+        }
+
+        // Navigation Tab Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`sec-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-tab').forEach(el => {
+                el.classList.remove('bg-emerald-600', 'text-white', 'shadow-lg');
+                el.classList.add('text-gray-300', 'hover:text-white', 'hover:bg-slate-800');
+            });
+
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.add('bg-emerald-600', 'text-white', 'shadow-lg');
+            activeBtn.classList.remove('text-gray-300', 'hover:bg-slate-800');
+
+            if(tabId === '3d-system') {
+                setTimeout(onWindowResize, 100);
+            }
+        }
+
+        // Bilingual Language Switcher (English <-> Amharic)
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'am' : 'en';
+
+            // Update Button Texts
+            document.getElementById('langBtnTextDesktop').innerText = currentLang === 'en' ? 'አማርኛ' : 'English';
+            document.getElementById('langBtnTextMobile').innerText = currentLang === 'en' ? 'አማርኛ' : 'English';
+
+            // Update Header Subtitle
+            document.getElementById('headerSub').innerText = currentLang === 'en' 
+                ? 'የኢትዮጵያ ጤና ጥበቃ ሥርዓት እና የፖሊሲ ማዕከል' 
+                : 'Ethiopia Healthcare System & Strategic Policy Hub';
+
+            // Update element data attributes
+            document.querySelectorAll('[data-en]').forEach(el => {
+                const text = currentLang === 'en' ? el.getAttribute('data-en') : el.getAttribute('data-am');
+                if(text) el.innerText = text;
+            });
+        }
+
+        // Filter Policy Articles (Search Function)
+        function filterPolicyArticles() {
+            const query = document.getElementById('policySearchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.policy-card');
+
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                if(text.includes(query)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // CALCULATOR 1: Chlorine/Bleach Dilution Logic
+        function calculateChlorine() {
+            const C1 = parseFloat(document.getElementById('stockConc').value);
+            const C2 = parseFloat(document.getElementById('targetConc').value);
+            const V2 = parseFloat(document.getElementById('totalVolume').value);
+
+            const resultDiv = document.getElementById('chlorineResult');
+            resultDiv.classList.remove('hidden');
+
+            if(isNaN(C1) || isNaN(C2) || isNaN(V2) || C1 <= 0 || V2 <= 0) {
+                resultDiv.innerHTML = `<span class="text-red-400">Please enter valid values.</span>`;
+                return;
+            }
+
+            if(C2 >= C1) {
+                resultDiv.innerHTML = `<span class="text-red-400">Target concentration must be lower than stock concentration!</span>`;
+                return;
+            }
+
+            // Formula: V1 = (C2 * V2) / C1 (in Liters)
+            const V1_liters = (C2 * V2) / C1;
+            const V1_ml = V1_liters * 1000;
+            const water_liters = V2 - V1_liters;
+
+            resultDiv.innerHTML = `
+                <div class="font-bold text-emerald-400 mb-1">Preparation Recipe:</div>
+                <div>• Liquid Bleach Needed: <strong class="text-white">${V1_ml.toFixed(1)} mL</strong> (${V1_liters.toFixed(3)} L)</div>
+                <div>• Clean Water Needed: <strong class="text-white">${water_liters.toFixed(2)} Liters</strong></div>
+                <div class="text-[10px] text-gray-400 mt-1 italic">Mix well and store in a covered, non-metallic container for 24 hours max.</div>
+            `;
+        }
+
+        // CALCULATOR 2: UHC Indicator Progress Logic
+        function calculateUhcProgress() {
+            const ind = document.getElementById('uhcIndicator').value;
+            const val = parseFloat(document.getElementById('currentUhcVal').value);
+            const resultDiv = document.getElementById('uhcResult');
+            resultDiv.classList.remove('hidden');
+
+            const targets = {
+                mmr: { target: 279, lowerIsBetter: true, unit: "per 100k" },
+                u5mr: { target: 44, lowerIsBetter: true, unit: "per 1k" },
+                penta3: { target: 85, lowerIsBetter: false, unit: "%" },
+                cpr: { target: 50, lowerIsBetter: false, unit: "%" },
+                uhc_index: { target: 0.58, lowerIsBetter: false, unit: "Index" }
+            };
+
+            const t = targets[ind];
+            let percent = 0;
+            if(t.lowerIsBetter) {
+                // If lower is better (e.g. mortality), achievement is target/actual
+                percent = (t.target / val) * 100;
+            } else {
+                percent = (val / t.target) * 100;
+            }
+
+            let statusColor = "text-emerald-400";
+            let statusText = "On Track to Meet Target!";
+            if(percent < 80) {
+                statusColor = "text-red-400";
+                statusText = "Lags Behind HSTP-II Target";
+            } else if(percent < 95) {
+                statusColor = "text-yellow-400";
+                statusText = "Moderate Progress";
+            }
+
+            resultDiv.innerHTML = `
+                <div class="font-bold ${statusColor} mb-1">${statusText}</div>
+                <div>• Target: <strong class="text-white">${t.target} ${t.unit}</strong></div>
+                <div>• Current Achievement: <strong class="text-white">${percent.toFixed(1)}%</strong> of 2024/25 Goal</div>
+            `;
+        }
+
+        function updateUhcBaseline() {
+            const ind = document.getElementById('uhcIndicator').value;
+            const input = document.getElementById('currentUhcVal');
+            if(ind === 'mmr') input.value = 310;
+            if(ind === 'u5mr') input.value = 50;
+            if(ind === 'penta3') input.value = 78;
+            if(ind === 'cpr') input.value = 45;
+            if(ind === 'uhc_index') input.value = 0.52;
+            calculateUhcProgress();
+        }
+
+        // CALCULATOR 3: Hospital Staffing FTE Logic
+        function calculateStaffing() {
+            const beds = parseFloat(document.getElementById('bedCount').value);
+            const ratio = parseFloat(document.getElementById('staffRatio').value);
+            const hoursPerStaff = parseFloat(document.getElementById('workHours').value);
+
+            const resultDiv = document.getElementById('staffResult');
+            resultDiv.classList.remove('hidden');
+
+            if(isNaN(beds) || isNaN(ratio) || isNaN(hoursPerStaff) || ratio <= 0 || hoursPerStaff <= 0) {
+                resultDiv.innerHTML = `<span class="text-red-400">Please enter valid inputs.</span>`;
+                return;
+            }
+
+            // Total required bed coverage hours per week (24 hrs * 7 days = 168 hrs)
+            const staffOnDutyAtOnce = beds / ratio;
+            const totalRequiredHoursPerWeek = staffOnDutyAtOnce * 168;
+
+            // Full Time Equivalent (FTE) needed
+            const fteNeeded = totalRequiredHoursPerWeek / hoursPerStaff;
+
+            resultDiv.innerHTML = `
+                <div class="font-bold text-rose-400 mb-1">Staffing Requirement Estimate:</div>
+                <div>• Concurrent Staff On Duty Needed: <strong class="text-white">${staffOnDutyAtOnce.toFixed(1)} Staff</strong></div>
+                <div>• Total Required FTE Personnel: <strong class="text-white">${Math.ceil(fteNeeded)} Staff Members</strong></div>
+                <div class="text-[10px] text-gray-400 mt-1 italic">Includes 24/7 continuous shift rotation allowance.</div>
+            `;
+        }
+    </script>
+</body>
+</html>
